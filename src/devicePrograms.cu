@@ -173,7 +173,7 @@ extern "C" __global__ void __raygen__renderFrame() {
     uint32_t p0, p1;
     pack_pointer(&hit, p0, p1);
 
-    const unsigned int MAX_BOUNCE = 50;
+    const unsigned int MAX_BOUNCE = 20;
     float L = 0.f;
     float beta = 1.f;
 
@@ -183,8 +183,8 @@ extern "C" __global__ void __raygen__renderFrame() {
     unsigned int num_bounces;
     for (num_bounces = 0; num_bounces < MAX_BOUNCE; num_bounces++) {
         float q = 0.1f;
-        if (num_bounces < 10)
-            q = 0.f;
+        //if (num_bounces < 10)
+        //    q = 0.f;
 
         const float russian_roulette_u = rnd(seed);
         if (russian_roulette_u < q)
@@ -210,7 +210,9 @@ extern "C" __global__ void __raygen__renderFrame() {
             const float3 sky_bottom_color = make_float3(136.f / 255, 171.f / 255, 227.f / 255);
             const float3 sky_top_color = make_float3(1.f);
             const float3 sky_light = lerp(sky_bottom_color, sky_top_color, -max(0.f, ray_direction.z));
-            L += getByIndex(beta * sky_light, lambda);
+
+            if (num_bounces != 0)
+                L += getByIndex(beta * sky_light, lambda);
             break;
         }
 
@@ -234,7 +236,12 @@ extern "C" __global__ void __raygen__renderFrame() {
         material_sample_wi(mat, u, xi, wo, wi, hit, f, pdf, lambda);
 
         const float cosTheta = fabsf(wi.z);
-        beta *= f * cosTheta / pdf / (1.f - q);
+
+        const float dist = length(ray_origin - hit.intersection_point);
+        const float3 absorption = {0.7, 0.3, 0.1};
+
+        beta *= exp(-dist * getByIndex(absorption, lambda) / 3) * f * cosTheta / pdf / (1.f - q);
+
         ray_origin = offset_ray(hit.intersection_point, copysignf(1.f, wi.z) * hit.geometric_normal);
         ray_direction = normalize(make_float3(onb * make_float4(wi, 0)));
     }

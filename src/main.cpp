@@ -18,7 +18,7 @@
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     try {
-        constexpr unsigned int num_samples_per_pixel = 10;
+        constexpr unsigned int num_samples_per_pixel = 15;
         Renderer renderer;
 
         renderer.loadScene("/home/aymeric/Desktop/ros2_ws/install/stonefish_ros2/share/stonefish_ros2/other/scenarios/bluerov_heavy_simplified_shipwreck.scn");

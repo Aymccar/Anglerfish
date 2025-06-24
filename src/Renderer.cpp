@@ -128,7 +128,7 @@ Transform4 load_scene_transform(const Mesh& mesh) {
     Transform4 rotX = rotate(mesh.world_rotation.x, float3({1, 0, 0}));
     Transform4 rotY = rotate(mesh.world_rotation.y, float3({0, 1, 0}));
     Transform4 rotZ = rotate(mesh.world_rotation.z, float3({0, 0, 1}));
-    Transform4 R = rotZ * rotY * rotX; 
+    Transform4 R = transpose(rotX * rotY * rotZ); //To world transform
 
     Transform4 O = translate(mesh.origin.x, mesh.origin.y, mesh.origin.z);
     Transform4 scaleMat = scale(mesh.scale, mesh.scale, mesh.scale);
