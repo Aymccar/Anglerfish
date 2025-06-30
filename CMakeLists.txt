@@ -95,8 +95,4 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-install(DIRECTORY data/
-  DESTINATION data/
-)
-
 ament_package()

@@ -93,8 +93,6 @@ MaterialDescription load_scene_material_description(const Material& material, co
 
             int width, height, number_of_components;
             unsigned char *texture_data = stbi_load(look.texture.c_str(), &width, &height, &number_of_components, 4);
-            if (texture_data == nullptr){
-                unsigned char *texture_data = stbi_load("/home/aymeric/Desktop/ros2_ws/src/raytracer/data/placeholder.jpeg", &width, &height, &number_of_components, 4); //TODO no hardcoding!
             }
 
             Texture texture = Texture::Create<uchar4>(
