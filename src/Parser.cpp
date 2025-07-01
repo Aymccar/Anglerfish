@@ -79,7 +79,7 @@ void XMLParser::parse_file_recc(XMLNode* node){
         //Load include file and extract root node 
         string path = include_file->Attribute("file");
         string correct_path;
-        if (path.find("$(find " == 0))
+        if (path.find("$(find ") == 0)
         {
             size_t start = 7;
             size_t end = path.find(")", start);
@@ -156,7 +156,7 @@ void XMLParser::get_scenario(Scenario& scenario){
         string correct_path;
         if ((val_ptr = XMLLook->Attribute("texture")) != nullptr){
             string path = val_ptr; 
-            if (path.find("$(find " == 0))
+            if (path.find("$(find ") == 0)
             {
                 size_t start = 7;
                 size_t end = path.find(")", start);
@@ -200,7 +200,7 @@ void XMLParser::get_scenario(Scenario& scenario){
         string file_name = XMLMesh->FirstChildElement("physical")->FirstChildElement("mesh")->Attribute("filename");
 
         string correct_path;
-        if (file_name.find("$(find " == 0))
+        if (file_name.find("$(find ") == 0)
         {
             size_t start = 7;
             size_t end = file_name.find(")", start);
