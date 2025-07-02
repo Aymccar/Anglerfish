@@ -44,7 +44,7 @@ struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) HitgroupRecord {
 /* constructor - performs all setup, including initializing
   optix, creates module, pipeline, programs, SBT, etc. */
 Renderer::Renderer(){
-    node = std::make_shared<rclcpp::Node>("Robot", "raytracer");
+    node = std::make_shared<rclcpp::Node>("Robot", "anglerfish");
     sub = node->create_subscription<nav_msgs::msg::Odometry>("/bluerov/navigator/odometry", 10, [this](nav_msgs::msg::Odometry::SharedPtr msg){
 
             this->robot_pos = double3({msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z});
