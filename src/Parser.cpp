@@ -26,12 +26,33 @@ using namespace tinyxml2; //TODO make the implementation of each subtype of pars
 #define CYAN        "\033[36m"
 #define WHITE       "\033[37m"
 
-XMLParser::XMLParser(string file_path):
-    Parser(file_path)
+string Parser::get_file(string path){
+    string correct_path;
+    if (path.find("$(find ") == 0)
+    {
+        size_t start = 7;
+        size_t end = path.find(")", start);
+        string package_name = path.substr(start, end - start);
+        string relative_path = path.substr(end + 1, path.size());
+        correct_path = ament_index_cpp::get_package_share_directory(package_name) + relative_path;
+    }
+    else if (path.find("/") == 0)
+    {
+        correct_path = path;
+    }
+    else 
+    {
+        correct_path = data_path + "/" + path;
+    }
+    return correct_path;
+}
+
+XMLParser::XMLParser(string file_path, string data_path):
+    Parser(file_path, data_path)
 {
     XMLError e = root.LoadFile(file_path.c_str());
     if (e != XML_SUCCESS){
-        throw runtime_error("Failed to load XML file: " + file_path + " (TinyXML2 error code " + std::to_string(e) + ")");
+        throw runtime_error("Failed to load XML file: " + file_path + " (TinyXML2 error code " + to_string(e) + ")");
     }
     cout<< "Scenario file "<<file_path<<" correctly loaded!"<<endl;
 }
@@ -47,11 +68,6 @@ vector<XMLElement*> XMLParser::get_list(XMLNode* node, string field_name){
 
     return res; 
 }
-
-std::string getROS2PkgPath(std::string pkg_name){
-        return ament_index_cpp::get_package_share_directory(pkg_name);
-}
-
 
 void XMLParser::parse_file_recc(XMLNode* node){
     vector<XMLElement*> temp;
@@ -78,31 +94,18 @@ void XMLParser::parse_file_recc(XMLNode* node){
     while (include_file != nullptr){
         //Load include file and extract root node 
         string path = include_file->Attribute("file");
-        string correct_path;
-        if (path.find("$(find ") == 0)
-        {
-            size_t start = 7;
-            size_t end = path.find(")", start);
-            
-            std::string package_name = path.substr(start, end - start);
-            std::string relative_path = path.substr(end + 1, path.size());
-
-            correct_path = getROS2PkgPath(package_name) + relative_path;
-        }
-        else {
-            correct_path = path;
-        }
+        
         auto doc = make_unique<XMLDocument>();
-        XMLError e = doc->LoadFile(correct_path.c_str());
+        XMLError e = doc->LoadFile(get_file(path).c_str());
         if (e != XML_SUCCESS){
-            throw runtime_error("Failed to load XML file: " + correct_path + " (TinyXML2 error code " + std::to_string(e) + ")");
+            throw runtime_error("Failed to load XML file: " + path + " (TinyXML2 error code " + to_string(e) + ")");
         }
-        cout<<"Included file: " << correct_path <<" correctly loaded!"<<endl;
+        cout<<"Included file: " << path <<" correctly loaded!"<<endl;
         
         XMLElement* scenario = doc->FirstChildElement("scenario");
         if (scenario == nullptr){throw runtime_error("No scenario found in this file !");}
         
-        files.push_back(std::move(doc));
+        files.push_back(move(doc));
         parse_file_recc(scenario);
 
         include_file = include_file->NextSiblingElement("include");
@@ -153,26 +156,14 @@ void XMLParser::get_scenario(Scenario& scenario){
         look.name = XMLLook->Attribute("name");
         const char* val_ptr;
 
-        string correct_path;
+        string path;
         if ((val_ptr = XMLLook->Attribute("texture")) != nullptr){
-            string path = val_ptr; 
-            if (path.find("$(find ") == 0)
-            {
-                size_t start = 7;
-                size_t end = path.find(")", start);
-                std::string package_name = path.substr(start, end - start);
-                std::string relative_path = path.substr(end+1, path.size());
-
-                correct_path = getROS2PkgPath(package_name) + relative_path;
-            }
-            else {
-                correct_path = path;
-            }
+            path = get_file(val_ptr);
         }
         else {
-            correct_path = "";
+            path = "";
         }
-        look.texture = correct_path;
+        look.texture = path;
 
         float3 rgb_;
         if ((val_ptr = XMLLook->Attribute("rgb")) != nullptr){
@@ -199,21 +190,7 @@ void XMLParser::get_scenario(Scenario& scenario){
         Mesh mesh;
         string file_name = XMLMesh->FirstChildElement("physical")->FirstChildElement("mesh")->Attribute("filename");
 
-        string correct_path;
-        if (file_name.find("$(find ") == 0)
-        {
-            size_t start = 7;
-            size_t end = file_name.find(")", start);
-            std::string package_name = file_name.substr(start, end - start);
-            std::string relative_path = file_name.substr(end+1, file_name.size());
-
-            correct_path = getROS2PkgPath(package_name) + relative_path;
-        }
-        else {
-            correct_path = file_name;
-        }
-
-        mesh.file_name = correct_path;
+        mesh.file_name = get_file(file_name);
 
         XMLMesh->FirstChildElement("physical")->FirstChildElement("mesh")->QueryFloatAttribute("scale", &mesh.scale);
         mesh.material = XMLMesh->FirstChildElement("material")->Attribute("name");

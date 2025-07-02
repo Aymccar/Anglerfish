@@ -36,7 +36,7 @@ class Renderer {
         // performs all setup, including initializing optix, creates module, pipeline, programs, SBT etc.
         Renderer();
 
-        void loadScene(std::string filename);
+        void loadScene(std::string filename, std::string data_path);
 
         // render one sample/
         void render();

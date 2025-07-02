@@ -8,18 +8,20 @@
 
 class Parser{
 public: 
-    Parser(std::string file_path_){file_path = file_path_;};
+    Parser(std::string file_path_, std::string data_path_){file_path = file_path_; data_path = data_path_;};
     virtual void parse_file() = 0;
     virtual void get_scenario(Scenario& scenario) = 0;
-private :
+protected :
     std::string file_path;
+    std::string data_path;
+    std::string get_file(std::string path);
 };
 
 
 
 class XMLParser : public Parser {
 public:
-    XMLParser(std::string file_path);
+    XMLParser(std::string file_path, std::string data_path);
 
     void parse_file() override;
     void get_scenario(Scenario& scenario) override;

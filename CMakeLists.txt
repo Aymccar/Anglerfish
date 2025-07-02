@@ -88,11 +88,11 @@ target_include_directories(${PROJECT_NAME}
 
 # install targets
 install(TARGETS ${PROJECT_NAME}
-  DESTINATION lib/${PROJECT_NAME}
+    DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY include/
-  DESTINATION include/
+  DESTINATION share/include/
 )
 
 ament_package()

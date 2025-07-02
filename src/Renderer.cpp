@@ -137,20 +137,8 @@ Transform4 load_scene_transform(const Mesh& mesh) {
     return t;
 }
 
-std::string get_directory_path(const std::string &filename) {
-    std::string directory;
-    const size_t last_slash_idx = filename.rfind('/');
-    if (std::string::npos != last_slash_idx) {
-        directory = filename.substr(0, last_slash_idx);
-    }
 
-    return directory + "/";
-}
-
-
-void Renderer::loadScene(std::string scene_filename) {
-
-    const std::string scene_directory = get_directory_path(scene_filename);
+void Renderer::loadScene(std::string scene_filename, std::string data_path) {
 
     // TODO tangents, bitangents
     all_vertices.clear();
@@ -158,7 +146,7 @@ void Renderer::loadScene(std::string scene_filename) {
     all_normals.clear();
     all_uvs.clear();
 
-    XMLParser parser(scene_filename);
+    XMLParser parser(scene_filename, data_path);
     parser.parse_file();
 
     Scenario scenario;

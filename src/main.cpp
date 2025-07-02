@@ -17,11 +17,13 @@
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
+    std::string scenario_path = argv[1];
+    std::string data_path = argv[2]; 
     try {
         constexpr unsigned int num_samples_per_pixel = 15;
         Renderer renderer;
 
-        renderer.loadScene("/home/aymeric/Desktop/ros2_ws/install/stonefish_ros2/share/stonefish_ros2/other/scenarios/bluerov_heavy_simplified_shipwreck.scn");
+        renderer.loadScene(scenario_path, data_path);
 
         const uint2 fbSize = make_uint2(1920, 1080);
         renderer.resize(fbSize);
