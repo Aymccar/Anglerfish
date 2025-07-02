@@ -5,7 +5,10 @@ Anglerfish is an [OptiX](https://developer.nvidia.com/rtx/ray-tracing/optix) bas
 The camera movement are comming from [Stonefish_ros2](https://github.com/patrykcieslak/stonefish_ros2) through an odometry sensor topic.
 
 ## Dependencies
-TODO
+- OptiX 7.7.0
+- Cuda
+- assimp (libassymp-dev)
+- ROS2 (tested on jazzy)
 
 ## Scenario
 Scenario files parsed by Anglerfish are based on one's used by Stonefish. Then you can use your actual Stonefish scenario file in Anglerfihs by just adding some tags. 
