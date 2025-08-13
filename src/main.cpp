@@ -20,12 +20,12 @@ int main(int argc, char** argv) {
     std::string scenario_path = argv[1];
     std::string data_path = argv[2]; 
     try {
-        constexpr unsigned int num_samples_per_pixel = 15;
+        constexpr unsigned int num_samples_per_pixel = 4;
         Renderer renderer;
 
         renderer.loadScene(scenario_path, data_path);
 
-        const uint2 fbSize = make_uint2(1920, 1080);
+        const uint2 fbSize = make_uint2(1280, 720);
         renderer.resize(fbSize);
 
         while (1){

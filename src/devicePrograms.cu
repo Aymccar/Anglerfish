@@ -173,7 +173,7 @@ extern "C" __global__ void __raygen__renderFrame() {
     uint32_t p0, p1;
     pack_pointer(&hit, p0, p1);
 
-    const unsigned int MAX_BOUNCE = 20;
+    const unsigned int MAX_BOUNCE = 8;
     float L = 0.f;
     float beta = 1.f;
 
@@ -183,8 +183,6 @@ extern "C" __global__ void __raygen__renderFrame() {
     unsigned int num_bounces;
     for (num_bounces = 0; num_bounces < MAX_BOUNCE; num_bounces++) {
         float q = 0.1f;
-        //if (num_bounces < 10)
-        //    q = 0.f;
 
         const float russian_roulette_u = rnd(seed);
         if (russian_roulette_u < q)
@@ -216,11 +214,16 @@ extern "C" __global__ void __raygen__renderFrame() {
             break;
         }
 
+
         const MaterialDescription &mat = optixLaunchParams.material_descriptions[hit.instance_id];
+
+        const float dist = length(ray_origin - hit.intersection_point);
+        const float3 absorption = {0.7, 0.3, 0.1};
+        beta *= exp(-dist * getByIndex(absorption, lambda) / 3);
 
         if (mat.is_emissive) {
             L += getByIndex(beta * mat.emission, lambda);
-            break; // TODO later on, don't!
+            break;
         }
 
         const Transform4 onb = make_onb(hit.shading_normal);
@@ -237,10 +240,8 @@ extern "C" __global__ void __raygen__renderFrame() {
 
         const float cosTheta = fabsf(wi.z);
 
-        const float dist = length(ray_origin - hit.intersection_point);
-        const float3 absorption = {0.7, 0.3, 0.1};
 
-        beta *= exp(-dist * getByIndex(absorption, lambda) / 3) * f * cosTheta / pdf / (1.f - q);
+        beta *= f * cosTheta / pdf / (1.f - q);
 
         ray_origin = offset_ray(hit.intersection_point, copysignf(1.f, wi.z) * hit.geometric_normal);
         ray_direction = normalize(make_float3(onb * make_float4(wi, 0)));

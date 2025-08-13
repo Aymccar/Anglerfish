@@ -45,7 +45,7 @@ struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) HitgroupRecord {
   optix, creates module, pipeline, programs, SBT, etc. */
 Renderer::Renderer(){
     node = std::make_shared<rclcpp::Node>("Robot", "anglerfish");
-    sub = node->create_subscription<nav_msgs::msg::Odometry>("/bluerov/navigator/odometry", 10, [this](nav_msgs::msg::Odometry::SharedPtr msg){
+    sub = node->create_subscription<nav_msgs::msg::Odometry>("/bluerov/navigator/odometry", 1, [this](nav_msgs::msg::Odometry::SharedPtr msg){
 
             this->robot_pos = double3({msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z});
             //this->robot_att = quat2euler(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
@@ -114,6 +114,10 @@ MaterialDescription load_scene_material_description(const Material& material, co
 
     } else if (type_str == "mirror") {
         md.type = mirror;
+    } else if (type_str == "light") {
+        md.type = light;
+        md.is_emissive = true;
+        md.emission = look.rgb * 15;
     }
 
     return md;
@@ -816,6 +820,62 @@ void Renderer::updateScene() {
 
     launchParams.camera.origin = make_float3(robot_pos.x, robot_pos.y, robot_pos.z); 
     launchParams.camera.att = {(float)robot_att.x, (float)robot_att.y, (float)robot_att.z, (float)robot_att.w};
+
+    //UGLY
+    Transform4 transform;
+
+    // Position
+    float3 t = make_float3(robot_pos.x, robot_pos.y, robot_pos.z);
+
+    // Quaternion (normalized)
+    const float qr = robot_att.w;
+    const float qi = robot_att.x;
+    const float qj = robot_att.y;
+    const float qk = robot_att.z;
+
+    const float r00 = 1 - 2 *(qj * qj + qk * qk);
+    const float r01 = 2 * (qi * qj - qk * qr);
+    const float r02 = 2 * (qi * qk + qj * qr);
+     
+    const float r10 = 2 * (qi * qj + qk * qr);
+    const float r11 = 1 - 2 * (qi * qi + qk * qk);
+    const float r12 = 2 * (qj * qk - qi * qr);
+     
+    const float r20 = 2 * (qi * qk - qj * qr);
+    const float r21 = 2 * (qj * qk + qi * qr);
+    const float r22 = 1 - 2 * (qi * qi + qj * qj);
+
+    // Row-major rotation + translation packed in float4s
+    // Each row is float4: (Rxx, Rxy, Rxz, Tx) etc.
+
+    // First row
+    transform.m[0] = make_float4(
+        r00,
+        r01,
+        r02,
+        t.x
+    );
+
+    // Second row
+    transform.m[1] = make_float4(
+        r10,
+        r11,
+        r12,
+        t.y
+    );
+
+    // Third row
+    transform.m[2] = make_float4(
+        r20,
+        r21,
+        r22,
+        t.z
+    );
+
+    // Fourth row (unused for affine, but can be identity row)
+    transform.m[3] = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
+    transform = transform * rotate(1.57, {0, 0, 1}) * translate(3, 0, 0) * scale(1, 1, 1);
+    transforms[0] = transform;
                                                                                     
     is_accel_dirty = true;
 }

@@ -4,12 +4,14 @@
 
 #include "LambertianBRDF.h"
 #include "MirrorBRDF.h"
+#include "LightBRDF.h"
 
 
 
 enum MaterialType {
     lambertian = 0,
     mirror = 1,
+    light = 2,
 };
 
 __host__ __device__ struct MaterialDescription {
@@ -18,6 +20,7 @@ __host__ __device__ struct MaterialDescription {
     union {
         LambertianBRDFConfig lambertian_brdf_config;
         MirrorBRDFConfig mirror_brdf_config;
+        LightBRDFConfig mirror_brdf_light;
     };
 
     bool is_emissive = false;
@@ -40,6 +43,12 @@ __forceinline__ __device__ void material_sample_wi(const MaterialDescription &md
             brdf.sample_wi(u, u2, wo, wi, f, pdf, lambda);
             return;
         }
+    case light:
+        {
+            const LightBRDF brdf({});
+            brdf.sample_wi(u, u2, wo, wi, f, pdf, lambda);
+            return;
+        }
     }
 }
 
@@ -56,6 +65,11 @@ __forceinline__ __device__ float material_f(const MaterialDescription &md, const
             const MirrorBRDF brdf({});
             return brdf.f(wo, wi, lambda);
         }
+    case light:
+        {
+            const LightBRDF brdf({});
+            return brdf.f(wo, wi, lambda);
+        }
     }
 }
 
@@ -67,6 +81,11 @@ __forceinline__ __device__ float material_pdf(const MaterialDescription &md, con
             return brdf.pdf(wo, wi, lambda);
         }
     case mirror:
+        {
+            const MirrorBRDF brdf({});
+            return brdf.pdf(wo, wi, lambda);
+        }
+    case light:
         {
             const MirrorBRDF brdf({});
             return brdf.pdf(wo, wi, lambda);

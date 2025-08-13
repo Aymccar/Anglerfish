@@ -32,8 +32,10 @@ add_custom_command(
   -std=c++17 
   -I${CMAKE_SOURCE_DIR}/include 
   -I${OPTIX_ROOT}/include 
-  -arch=sm_75 
+  -arch=sm_89
   --ptx ${PTX_INPUT} 
+  -O3
+  -lineinfo
   -o ${PTX_OUTPUT}
   DEPENDS ${PTX_INPUT}
   COMMENT "Compiling ${PTX_INPUT} to PTX"
